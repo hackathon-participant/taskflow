@@ -35,7 +35,6 @@ def get_tasks():
     if search:
         query = query.filter(Task.title.contains(search))
 
-    # BUG #1: Tasks are not sorted - they should be sorted by created_at descending
     tasks = query.all()
 
     return jsonify([task.to_dict() for task in tasks])
@@ -49,7 +48,6 @@ def create_task():
     if not data or not data.get('title'):
         return jsonify({'error': 'Title is required'}), 400
 
-    # BUG #2: Priority validation is missing - should only allow 'low', 'medium', 'high'
     priority = data.get('priority', 'medium')
 
     due_date = None
@@ -126,7 +124,6 @@ def delete_task(task_id):
     db.session.delete(task)
     db.session.commit()
 
-    # BUG #3: Should return 204 No Content, but returns 200 with message
     return jsonify({'message': 'Task deleted'})
 
 
@@ -142,15 +139,6 @@ def toggle_task(task_id):
     db.session.commit()
 
     return jsonify(task.to_dict())
-
-
-# MISSING FEATURE: No endpoint to get task statistics
-# Should have GET /api/tasks/stats that returns:
-# - total tasks count
-# - completed tasks count
-# - pending tasks count
-# - tasks by priority breakdown
-
 
 if __name__ == '__main__':
     with app.app_context():
