@@ -1,6 +1,7 @@
 // TaskFlow Frontend JavaScript
 
-const API_BASE = '/api';
+// Use relative path so it works behind reverse proxy
+const API_BASE = 'api';
 
 // DOM Elements
 const taskForm = document.getElementById('task-form');
