@@ -15,13 +15,35 @@ db.init_app(app)
 
 @app.route('/')
 def index():
-    """Serve the main page."""
+    """Serve the main page.
+
+    Renders the application's main HTML interface where users can view and
+    manage their tasks.
+
+    Returns:
+        str: Rendered HTML template for the main page.
+    """
     return render_template('index.html')
 
 
 @app.route('/api/tasks', methods=['GET'])
 def get_tasks():
-    """Get all tasks, optionally filtered by status or search query."""
+    """Get all tasks, optionally filtered by status or search query.
+
+    Retrieves tasks from the database with optional filtering by completion
+    status and text search. The search query matches against task titles.
+
+    Query Parameters:
+        status (str, optional): Filter by task status. Valid values are:
+            - 'completed': Show only completed tasks
+            - 'pending': Show only pending tasks
+            - 'all' or None: Show all tasks
+        search (str, optional): Search query to filter tasks by title.
+
+    Returns:
+        Response: JSON array of task objects, each containing task details
+        (id, title, description, completed, priority, due_date, etc.).
+    """
     status = request.args.get('status')  # all, completed, pending
     search = request.args.get('search', '')
 
@@ -42,7 +64,24 @@ def get_tasks():
 
 @app.route('/api/tasks', methods=['POST'])
 def create_task():
-    """Create a new task."""
+    """Create a new task.
+
+    Creates a new task in the database with the provided details. The task
+    title is required, while other fields are optional with default values.
+
+    Request Body (JSON):
+        title (str, required): The task title.
+        description (str, optional): Detailed description of the task.
+        priority (str, optional): Task priority level ('low', 'medium', 'high').
+            Defaults to 'medium'.
+        due_date (str, optional): Due date in ISO format (e.g., '2024-12-31T23:59:59').
+
+    Returns:
+        Response: JSON object of the newly created task with HTTP status 201.
+
+    Error Responses:
+        400: If title is missing or date format is invalid.
+    """
     data = request.get_json()
 
     if not data or not data.get('title'):
@@ -72,7 +111,19 @@ def create_task():
 
 @app.route('/api/tasks/<int:task_id>', methods=['GET'])
 def get_task(task_id):
-    """Get a specific task by ID."""
+    """Get a specific task by ID.
+
+    Retrieves detailed information about a single task from the database.
+
+    Path Parameters:
+        task_id (int): The unique identifier of the task to retrieve.
+
+    Returns:
+        Response: JSON object containing the task details.
+
+    Error Responses:
+        404: If the task with the specified ID does not exist.
+    """
     task = Task.query.get(task_id)
 
     if not task:
@@ -83,7 +134,28 @@ def get_task(task_id):
 
 @app.route('/api/tasks/<int:task_id>', methods=['PUT'])
 def update_task(task_id):
-    """Update an existing task."""
+    """Update an existing task.
+
+    Updates one or more fields of an existing task. Only the fields provided
+    in the request body will be updated; other fields remain unchanged.
+
+    Path Parameters:
+        task_id (int): The unique identifier of the task to update.
+
+    Request Body (JSON, all fields optional):
+        title (str): Updated task title.
+        description (str): Updated task description.
+        completed (bool): Updated completion status.
+        priority (str): Updated priority level ('low', 'medium', 'high').
+        due_date (str or None): Updated due date in ISO format, or null to clear.
+
+    Returns:
+        Response: JSON object of the updated task.
+
+    Error Responses:
+        404: If the task with the specified ID does not exist.
+        400: If the date format is invalid.
+    """
     task = Task.query.get(task_id)
 
     if not task:
@@ -115,7 +187,19 @@ def update_task(task_id):
 
 @app.route('/api/tasks/<int:task_id>', methods=['DELETE'])
 def delete_task(task_id):
-    """Delete a task."""
+    """Delete a task.
+
+    Permanently removes a task from the database.
+
+    Path Parameters:
+        task_id (int): The unique identifier of the task to delete.
+
+    Returns:
+        Response: JSON object with a success message.
+
+    Error Responses:
+        404: If the task with the specified ID does not exist.
+    """
     task = Task.query.get(task_id)
 
     if not task:
@@ -129,7 +213,20 @@ def delete_task(task_id):
 
 @app.route('/api/tasks/<int:task_id>/toggle', methods=['PATCH'])
 def toggle_task(task_id):
-    """Toggle the completion status of a task."""
+    """Toggle the completion status of a task.
+
+    Switches the task's completion status between completed and pending.
+    If the task is completed, it becomes pending; if pending, it becomes completed.
+
+    Path Parameters:
+        task_id (int): The unique identifier of the task to toggle.
+
+    Returns:
+        Response: JSON object of the task with its updated completion status.
+
+    Error Responses:
+        404: If the task with the specified ID does not exist.
+    """
     task = Task.query.get(task_id)
 
     if not task:
